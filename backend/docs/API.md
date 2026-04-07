@@ -41,6 +41,8 @@ Autenticação: cabeçalho `Authorization: Bearer <JWT>`.
 | `POST` | `/admin/doctors` | Criar médico na mesma clínica: `email`, `password`, `name` |
 | `GET` | `/admin/doctors` | Lista de médicos da clínica |
 | `GET` | `/admin/patients` | Lista de pacientes da clínica |
+| `GET` | `/appointments` | Consultas da clínica (admin) |
+| `POST` | `/appointments` | Criar consulta (`patientId`, `doctorId`, `scheduledAt`, `notes?`) |
 
 ---
 
@@ -50,6 +52,9 @@ Autenticação: cabeçalho `Authorization: Bearer <JWT>`.
 |--------|---------|-----------|
 | `GET` | `/doctor/me` | Perfil do médico |
 | `GET` | `/doctor/patients` | Pacientes da mesma clínica |
+| `GET` | `/appointments` | Consultas em que é o médico |
+| `PATCH` | `/appointments/:id/confirm` | Confirmar consulta |
+| `PATCH` | `/appointments/:id/cancel` | Cancelar (se for o médico da consulta) |
 
 ---
 
@@ -59,6 +64,16 @@ Autenticação: cabeçalho `Authorization: Bearer <JWT>`.
 |--------|---------|-----------|
 | `GET` | `/patient/me` | Perfil do paciente |
 | `GET` | `/patient/clinic` | Dados da clínica onde está registado |
+| `GET` | `/appointments` | Consultas do paciente |
+| `GET` | `/patient/appointments` | Lista as consultas do paciente (formato próprio; ver resposta) |
+
+---
+
+## Agendamentos — resumo
+
+Estados: `SCHEDULED`, `CONFIRMED`, `CANCELLED`.
+
+Objeto típico (camelCase): `id`, `clinicId`, `doctorId`, `patientId`, `scheduledAt`, `status`, `notes`, `createdAt`, `updatedAt`. A rota `GET /patient/appointments` pode expor campos em **snake_case** (`scheduled_at`, etc.) — alinhar consumidores em conformidade.
 
 ---
 
@@ -100,8 +115,8 @@ Ver [`prisma/seed.js`](../prisma/seed.js).
 | `POST` | `/auth/register` | — | `email`, `password`, `name`, `clinicId` — apenas **PATIENT** |
 | `POST` | `/auth/login` | — | `email`, `password` → `{ token, user }` |
 | `GET` | `/me` | JWT | Perfil do utilizador |
-| `GET` | `/clinics` | — | Lista clínicas |
-| `GET` | `/clinics/:id` | — | Detalhe |
+| `GET` | `/clinicas` | — | Lista clínicas |
+| `GET` | `/clinicas/:id` | — | Detalhe |
 | `GET` | `/admin/clinic` | JWT + admin | Clínica do admin |
 | `PATCH` | `/admin/clinic` | JWT + admin | `name`, `city` |
 | `POST` | `/admin/doctors` | JWT + admin | Criar médico |
@@ -111,3 +126,8 @@ Ver [`prisma/seed.js`](../prisma/seed.js).
 | `GET` | `/doctor/patients` | JWT + médico | Pacientes |
 | `GET` | `/patient/me` | JWT + paciente | Perfil |
 | `GET` | `/patient/clinic` | JWT + paciente | Clínica |
+| `GET` | `/appointments` | JWT | Lista por perfil (ver secções acima) |
+| `POST` | `/appointments` | JWT + admin | Criar agendamento |
+| `PATCH` | `/appointments/:id/confirm` | JWT + médico | Confirmar |
+| `PATCH` | `/appointments/:id/cancel` | JWT + admin ou médico | Cancelar |
+| `GET` | `/patient/appointments` | JWT + paciente | Consultas do paciente |

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.appointment.deleteMany();
   await prisma.user.deleteMany();
   await prisma.clinic.deleteMany();
 
@@ -26,7 +27,7 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
+  const doctor = await prisma.user.create({
     data: {
       email: "medico@clinica.com",
       passwordHash,
@@ -36,7 +37,7 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
+  const patient = await prisma.user.create({
     data: {
       email: "paciente@clinica.com",
       passwordHash,
@@ -77,6 +78,20 @@ async function main() {
       name: "Dra. Aurora",
       role: "DOCTOR",
       clinicId: clinic2.id,
+    },
+  });
+
+  const future = new Date();
+  future.setDate(future.getDate() + 7);
+
+  await prisma.appointment.create({
+    data: {
+      clinicId: clinic.id,
+      doctorId: doctor.id,
+      patientId: patient.id,
+      scheduledAt: future,
+      status: "SCHEDULED",
+      notes: "Consulta de rotina (seed)",
     },
   });
 }

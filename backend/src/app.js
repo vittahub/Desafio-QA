@@ -6,6 +6,7 @@ import * as clinicPublic from "./controllers/clinicPublicController.js";
 import * as admin from "./controllers/adminController.js";
 import * as doctor from "./controllers/doctorController.js";
 import * as patient from "./controllers/patientController.js";
+import * as appointments from "./controllers/appointmentController.js";
 
 export function createApp() {
   const app = express();
@@ -55,6 +56,26 @@ export function createApp() {
     admin.listPatients
   );
 
+  app.get("/appointments", requireAuth, appointments.listAppointments);
+  app.post(
+    "/appointments",
+    requireAuth,
+    requireRoles("CLINIC_ADMIN"),
+    appointments.createAppointment
+  );
+  app.patch(
+    "/appointments/:id/confirm",
+    requireAuth,
+    requireRoles("DOCTOR"),
+    appointments.confirmAppointment
+  );
+  app.patch(
+    "/appointments/:id/cancel",
+    requireAuth,
+    requireRoles("CLINIC_ADMIN", "DOCTOR"),
+    appointments.cancelAppointment
+  );
+
   app.get("/doctor/me", requireAuth, requireRoles("DOCTOR"), doctor.getMe);
   app.get(
     "/doctor/patients",
@@ -69,6 +90,12 @@ export function createApp() {
     requireAuth,
     requireRoles("PATIENT"),
     patient.getMyClinic
+  );
+  app.get(
+    "/patient/appointments",
+    requireAuth,
+    requireRoles("PATIENT"),
+    appointments.listPatientAppointments
   );
 
   app.use((_req, res) => {

@@ -104,6 +104,7 @@ export async function listPatients(req, res, next) {
         role: "PATIENT",
       },
       orderBy: { name: "asc" },
+      take: 1,
     });
     res.json(list.map(toPublicUser));
   } catch (e) {

@@ -12,11 +12,11 @@
 
 | Perfil | Rotas / funções |
 |--------|-----------------|
-| **Público** | `GET /health`, `GET /clinics`, `GET /clinics/:id`, `POST /auth/register` (só **paciente** com `clinicId`), `POST /auth/login` |
+| **Público** | `GET /health`, `GET /clinicas`, `GET /clinicas/:id`, `POST /auth/register` (só **paciente** com `clinicId`), `POST /auth/login` |
 | **Qualquer autenticado** | `GET /me` |
-| **Admin da clínica** (`CLINIC_ADMIN`) | `GET/PATCH /admin/clinic`, `POST/GET /admin/doctors`, `GET /admin/patients` |
-| **Médico** (`DOCTOR`) | `GET /doctor/me`, `GET /doctor/patients` |
-| **Paciente** (`PATIENT`) | `GET /patient/me`, `GET /patient/clinic` |
+| **Admin da clínica** (`CLINIC_ADMIN`) | `GET/PATCH /admin/clinic`, `POST/GET /admin/doctors`, `GET /admin/patients`, `POST /appointments`, `GET /appointments`, `PATCH /appointments/:id/cancel` |
+| **Médico** (`DOCTOR`) | `GET /doctor/me`, `GET /doctor/patients`, `GET /appointments`, `PATCH /appointments/:id/confirm`, `PATCH /appointments/:id/cancel` |
+| **Paciente** (`PATIENT`) | `GET /patient/me`, `GET /patient/clinic`, `GET /appointments`, `GET /patient/appointments` |
 
 Tentativas de aceder a rotas de outro perfil → **403**. Detalhe das rotas: [API.md](API.md).
 
@@ -45,14 +45,14 @@ flowchart LR
 backend/
 ├── docs/              # Esta documentação
 ├── prisma/
-│   ├── schema.prisma  # Modelos Clinic, User
+│   ├── schema.prisma  # Modelos Clinic, User, Appointment; enums
 │   └── seed.js
 ├── src/
 │   ├── app.js         # Rotas e middleware Express
 │   ├── server.js      # Entrada: listen(PORT)
 │   ├── config.js      # PORT, JWT_SECRET
 │   ├── db.js          # Instância PrismaClient
-│   ├── controllers/   # auth, admin, doctor, patient, clínica pública
+│   ├── controllers/   # auth, admin, doctor, patient, clinic pública, appointments
 │   ├── middleware/    # requireAuth, requireRoles
 │   └── utils/         # password, token, userDto
 └── tests/
@@ -63,8 +63,9 @@ backend/
 
 - **Clinic** — nome, cidade.
 - **User** — e-mail único, hash de password, nome, `role`, `clinicId` opcional (obrigatório para os fluxos de clínica).
+- **Appointment** — `clinicId`, `doctorId`, `patientId`, `scheduledAt`, `status`, `notes`; ligada a `Clinic` e a dois `User` (médico e paciente).
 
-Relação: vários utilizadores pertencem a uma clínica (`User.clinicId` → `Clinic.id`).
+Relação: vários utilizadores pertencem a uma clínica (`User.clinicId` → `Clinic.id`). Consultas referenciam clínica, médico e paciente.
 
 ## Fluxo de autenticação
 

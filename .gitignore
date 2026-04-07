@@ -1,0 +1,8 @@
+﻿node_modules/
+backend/docs/internal/
+**/GABARITO*.md
+.env
+*.db
+*.db-journal
+dist/
+.DS_Store
